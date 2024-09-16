@@ -31,8 +31,6 @@ const Autocomplete = ({
         setLoading(true);
         try {
             let result;
-            console.log(staticData);
-            console.log(fetchSuggestions);
             if(staticData) {
                 result = staticData.filter((item) => {
                     return item.toLowerCase().includes(query.toLowerCase());
@@ -52,7 +50,6 @@ const Autocomplete = ({
     const debouncedInputvalue = useDebounce(inputValue, 300);
 
     useEffect(() => {
-        console.log(inputValue.length, 'fefw');
         if(inputValue.length > 1) {``
         getSuggestions(debouncedInputvalue);
         } else {

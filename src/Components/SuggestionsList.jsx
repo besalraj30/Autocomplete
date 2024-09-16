@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const SuggestionsList = ({suggestions=[], highlight, dataKey, onSuggestionClick}) => {
 
     const [activeIndex, setActiveIndex] = useState(-1);
+    const listRefs = useRef([]);
 
     const getHighlightedText = (text, highlight) => {
         const parts = text.split(new RegExp(`(${highlight})`, "gi"));
@@ -33,6 +34,14 @@ const SuggestionsList = ({suggestions=[], highlight, dataKey, onSuggestionClick}
     useEffect(() => {   
         document.addEventListener('keydown', handleKeyDown);
 
+        //Scroll active element into view
+        if(activeIndex >=0 && listRefs.current[activeIndex]) {
+            listRefs.current[activeIndex].scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+            })
+        }
+
         return () => document.removeEventListener('keydown', handleKeyDown);
     }, [activeIndex, suggestions]);
 
@@ -45,7 +54,7 @@ const SuggestionsList = ({suggestions=[], highlight, dataKey, onSuggestionClick}
                 const highlightedText = getHighlightedText(currSuggestion, highlight);
 
                 return (
-                    <li key={index} onClick={() => onSuggestionClick(suggestion)}
+                    <li key={index} onClick={() => onSuggestionClick(suggestion)} ref={el => listRefs.current[index] = el}
                     className={`suggestion-item ${index===activeIndex ? 'active' : ''}`} style={{
                         backgroundColor: index === activeIndex ? '#e0e0e0' : 'transparent'
                     }}

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import './styles.css';
 import SuggestionsList from "./SuggestionsList";
 import useDebounce from "../hooks/useDebounce";
@@ -20,6 +20,7 @@ const Autocomplete = ({
     const [suggestions, setSuggestions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const cache = useRef({});
 
     const handleInputChange = (e) => {
         setInputValue(e.target.value);
@@ -31,12 +32,17 @@ const Autocomplete = ({
         setLoading(true);
         try {
             let result;
-            if(staticData) {
-                result = staticData.filter((item) => {
-                    return item.toLowerCase().includes(query.toLowerCase());
-                })
-            } else if(fetchSuggestions) {
-                result = await fetchSuggestions(query);
+            if(cache.current[query]) {
+                result = cache.current[query];
+            } else {
+                if(staticData) {
+                    result = staticData.filter((item) => {
+                        return item.toLowerCase().includes(query.toLowerCase());
+                    })
+                } else if(fetchSuggestions) {
+                    result = await fetchSuggestions(query);
+                }
+                cache.current[query] = result;
             }
             setSuggestions(result);
         } catch(e){
@@ -55,7 +61,7 @@ const Autocomplete = ({
         } else {
             setSuggestions([]);
         }
-    }, [inputValue]);
+    }, [debouncedInputvalue]);
 
     const handleSuggestionClick = (suggestion) => {
         setInputValue(dataKey ? suggestion[dataKey] : suggestion);
